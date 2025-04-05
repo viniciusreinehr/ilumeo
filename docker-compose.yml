@@ -1,0 +1,71 @@
+networks:
+  ilumeo:
+    name: ilumeo
+
+volumes:
+  mysqldata:
+
+services:
+  mysql:
+    image: 'mysql/mysql-server:8.0'
+    ports:
+        - '${FORWARD_DB_PORT:-3306}:3306'
+    environment:
+        MYSQL_ROOT_PASSWORD: '${MYSQL_PASSWORD}'
+        MYSQL_ROOT_HOST: '%'
+        MYSQL_DATABASE: '${MYSQL_DATABASE}'
+        MYSQL_USER: '${MYSQL_USER}'
+        MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+        MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    networks:
+        - ilumeo
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ${PWD}/data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql-mode="ALLOW_INVALID_DATES" --default-authentication-plugin=mysql_native_password
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        retries: 3
+        timeout: 5s
+
+  redis-chache:
+    image: redis:7.4.2-alpine
+    networks:
+      - ilumeo
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/back/Dockerfile
+    command: bash -c "npm run migrate && npm run generate && npm run dev"
+    volumes:
+      - ./back:/app
+    ports:
+      - "8081:8081"
+      - "9229:9229"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER='${MYSQL_USER}'
+      - DB_PASSWORD='${MYSQL_PASSWORD}'
+      - DB_NAME='${MYSQL_DATABASE}'
+      - REDIS_HOST=redis-chache
+      - REDIS_PORT=6379
+    networks:
+      - ilumeo
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/front/Dockerfile
+    command: "npm run dev"
+    volumes:
+      - ./front:/app
+    ports:
+      - "3000:3000"
+    networks:
+      - ilumeo
+
