@@ -11,12 +11,12 @@ export default class SearchService {
     ) {}
 
     async search(body) {
-        const { origin, period, status } = body;
+        const { origin, period, status, startDate, endDate } = body;
 
         if (!OriginEnum[origin]) {
             return {
                 status: 'error',
-                message: 'Origin inválido',
+                message: 'Field origin is required',
                 originUsed: origin
             }
         }
@@ -24,7 +24,7 @@ export default class SearchService {
         if (!StatusEnum[status]) {
             return {
                 status: 'error',
-                message: 'Status inválido',
+                message: 'Field status is required',
                 statusUsed: status
             }
         }
@@ -32,25 +32,35 @@ export default class SearchService {
         if (!PeriodEnum[period]) {
             return {
                 status: 'error',
-                message: 'Periodo inválido',
+                message: 'Field period is required',
                 periodUsed: period
             }
         }
 
-        const redisKey = `${origin}-${status}-${period}`;
+        if (!startDate || !endDate) {
+            return {
+                status: 'error',
+                message: 'Fields startDate and endDate is required',
+            }
+        }
+
+        const redisKey = `${origin}-${status}-${period}-${startDate}-${endDate}`;
         const cached = await this.redis.get(redisKey);
         const lastUpdate = await this.redis.get('lastUpdate');
-        if (cached && lastUpdate > (new Date(Date.now() - 1000 * 60 * 60 * 24)).toString()) {
-            return {
-                status: 'success',
-                response: JSON.parse(cached)
+        const lastUpdateDate = new Date(lastUpdate);
+        if (cached && lastUpdateDate < (new Date(Date.now() - 1000 * 60 * 60 * 24))) {
+            const resp = JSON.parse(cached);
+            if (resp.status !== 'error' && resp.response.data.length > 0) {
+                return resp;
             }
         }
 
         const response = await this.service.get({
             status: status,
             origin: origin,
-            period: period
+            period: period,
+            startDate: startDate,
+            endDate: endDate
         });
 
         this.redis.set(redisKey, JSON.stringify(response), 'EX', 60 * 60 * 24);
