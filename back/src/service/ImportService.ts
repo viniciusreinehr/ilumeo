@@ -57,6 +57,7 @@ export default class ImportService {
     }
 
     private async do(item) {
+        this.redis.set('lastUpdate', (new Date(Date.now() - 1000 * 60 * 60 * 24)).toString());
         await this.prisma.$executeRawUnsafe(item).then((result: any) => {
             return result;
         }).catch((error: any) => {

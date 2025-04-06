@@ -39,7 +39,8 @@ export default class SearchService {
 
         const redisKey = `${origin}-${status}-${period}`;
         const cached = await this.redis.get(redisKey);
-        if (cached) {
+        const lastUpdate = await this.redis.get('lastUpdate');
+        if (cached && lastUpdate > (new Date(Date.now() - 1000 * 60 * 60 * 24)).toString()) {
             return {
                 status: 'success',
                 response: JSON.parse(cached)

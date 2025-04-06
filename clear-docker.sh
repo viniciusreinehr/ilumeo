@@ -1,17 +1,39 @@
 #!/bin/bash
 
+toclear="ilumeo"
+
 #Clear docker containers
 echo "Clearing all docker containers..."
-docker rm -f $(docker ps -aq)
+containers=$(docker ps | grep $toclear | awk '{print $1}')
+if [ -z "$containers" ]; then
+    echo "No containers to remove."
+else
+    docker rm -f $containers
+fi
 #Clear docker images
 echo "Clearing all docker images..."
-docker rmi -f $(docker images -aq)
+images=$(docker images | grep $toclear | awk '{print $3}')
+if [ -z "$images" ]; then
+    echo "No images to remove."
+else
+    docker rmi -f $images
+fi
 #Clear docker volumes
 echo "Clearing all docker volumes..."
-docker volume rm -f $(docker volume ls -q)
+volumes=$(docker volume ls | grep $toclear | awk '{print $2}')
+if [ -z "$volumes" ]; then
+    echo "No volumes to remove."
+else
+    docker volume rm -f $volumes
+fi
 #Clear docker networks
 echo "Clearing all docker networks..."
-docker network rm -f $(docker network ls -q)
+networks=$(docker network ls | grep $toclear | awk '{print $2}')
+if [ -z "$networks" ]; then
+    echo "No networks to remove."
+else
+    docker network rm -f $networks
+fi
 #Clear docker build cache
 echo "Clearing all docker build cache..."
 docker builder prune -f

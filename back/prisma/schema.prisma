@@ -20,5 +20,5 @@ model users_surveys_responses_aux {
   response_status_id  Int
   created_at DateTime @default(now())
 
-  @@index([origin, created_at(sort: Desc)])
+  @@index([origin, response_status_id, created_at(sort: Desc)])
 }

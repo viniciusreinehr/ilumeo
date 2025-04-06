@@ -134,3 +134,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+back/prisma/migrations/*
+back/generated/*
+back/case_tech_lead.sql
