@@ -63,44 +63,55 @@ Abaixo irei explicar os motivos de escolha das tecnologias utilizadas.
   - GET http://localhost:8081/
     - Retorna as informações para o cálculo da taxa de conversão
     - Request:
-      - {
+      ````
+      {
         "origin": "EMAIL" | "WHATSAPP" | "MOBILE",
         "status": "VALIDO" | "INVALIDO" | "INCOMPLETO" | "PENDENTE" | "ABERTO" | "VISUALIZOU",
         "period": "DAY" | "WEEK" | "MONTH" | "YEAR" | "ALL"
         "startDate": "YYYY-MM-DD",
         "endDate": "YYYY-MM-DD",
       }
+      ````
     - Response:
-      - {
-          "status": "success",
-          "response": {
-            "origin": "EMAIL",
-            "status": "PENDENTE",
-            "period": "DAY",
-            "data": [
-              {
-                "created_at": "2025-04-06",
-                "total": "6515122"
-              }
-            ]
-          }
+      ````
+      {
+        "status": "success",
+        "response": {
+          "origin": "EMAIL",
+          "status": "PENDENTE",
+          "period": "DAY",
+          "data": [
+            {
+              "created_at": "2025-04-06",
+              "total": "6515122"
+            }
+          ]
         }
+      }
+      ````
   - POST http://localhost:8081/populate
     - Realiza a importação dos dados do arquivo sql
     - Response: 
-      - {
+      ````
+      {
         "status": "success",
         "message": "Importação em execução!",
         "filas": 96
       }
+      ````
   - GET http://localhost:8081/populate/status
     - Busca o status da importação
     - Response:
-      - {
-          "status": "success",
-          "response": {
-            "porcentagem": 100,
-            "total": 9525993,
-            "atual": 9525993
-          }
+      ````
+      {
+        "status": "success",
+        "response": {
+          "porcentagem": 100,
+          "total": 9525993,
+          "atual": 9525993
         }
+      }
+      ````
+
+## Front-end
+  - Escolhi o Nextjs por questões de fácil consumo de API e performance de exibição ao usuário, porém, faltou tempo para implementação da lógica completa que havia projetado. 
