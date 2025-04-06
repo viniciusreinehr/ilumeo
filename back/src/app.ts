@@ -21,6 +21,9 @@ app.use(bodyParser.json({
 app.get('/', async (req, res) => {
     const service = new SearchService();
     const resp = await service.search(req.body);
+    if (resp.status === 'error') {
+        return res.status(400).json(resp);
+    }
     res.json(resp)
 });
 
