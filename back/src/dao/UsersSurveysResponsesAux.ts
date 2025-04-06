@@ -12,7 +12,6 @@ export default class UsersSurveysResponsesAux {
     async get(filters: GetUserInterface) {
         const { status, origin, period } = filters;
         const query = this.query(filters);
-        console.log("Query: ", query);
         return this.prisma.$queryRawUnsafe(query)
             .then((result: any) => {
                 return {
@@ -22,7 +21,6 @@ export default class UsersSurveysResponsesAux {
                         status: status,
                         period: period,
                         data: result.map((item: any) => {
-                            console.log("Item: ", item);
                             return {
                                 created_at: item.created_at,
                                 total: item.total.toString()
@@ -46,7 +44,7 @@ export default class UsersSurveysResponsesAux {
             SELECT
                 id,
                 origin,
-                created_at,
+                DATE(created_at) as created_at,
                 COUNT(DISTINCT id) as total
             FROM users_surveys_responses_aux usra
             WHERE usra.origin = '${OriginEnum[origin]}'
