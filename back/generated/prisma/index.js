@@ -158,8 +158,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel users_surveys_responses_aux {\n  id                 Int      @id @default(autoincrement())\n  origin             String\n  response_status_id Int\n  created_at         DateTime @default(now())\n}\n",
-  "inlineSchemaHash": "9457daff4e296993c29e9bc1c627d185672474d1f7e84b4c162dc6a1894989fa",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel users_surveys_responses_aux {\n  id                 Int      @id @default(autoincrement())\n  origin             String\n  response_status_id Int\n  created_at         DateTime @default(now())\n\n  @@index([origin, created_at(sort: Desc)])\n}\n",
+  "inlineSchemaHash": "b9a8e85883d2dbc5f804ca7c9ddbddfca4db42989d5cbd357f7a68bcba189b5d",
   "copyEngine": true
 }
 

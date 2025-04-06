@@ -3,23 +3,28 @@ import { PrismaClient } from "../../generated/prisma";
 
 const prisma = new PrismaClient();
 export default class ImportService {
+    private filas: number = 0;
     async file() {
         const redis = new Redis("redis-chache");
         var fs = require('fs');
         const sql = await fs.readFileSync('/app/case_tech_lead.sql').toString();
         const items = sql.split(';');
         redis.set('totalToImport', (items.length*10).toString());
-        this.exec(items);
+        return this.exec(items);
     }
 
     private async exec(array) {
         if (array.length === 0) {
-            console.log('Importação finalizada!');
-            return;
+            return {
+                status: 'success',
+                message: 'Importação em execução!',
+                filas: this.filas
+            };
         }
-        const newArray = array.splice(0, 1000);
+        const newArray = array.splice(0, 10000);
         this.loop(newArray);
-        this.exec(array);
+        this.filas++;
+        return this.exec(array);
     }
 
     private async loop(array) {

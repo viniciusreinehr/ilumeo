@@ -5,6 +5,7 @@ import { PrismaClient } from '../generated/prisma'
 import dotenv from 'dotenv';
 import ImportService from './service/ImportService';
 import Redis from 'ioredis';
+import Auth from './middleware/Auth';
 
 const redis = new Redis("redis-chache");
 const prisma = new PrismaClient();
@@ -13,13 +14,7 @@ dotenv.config();
 
 const app = express();
 
-app.use((req, res, next) => {
-    //console.log(req.headers);
-    if (!req.headers['authorization']) {
-        return res.sendStatus(401);
-    }
-    next();
-})
+app.use(Auth);
 
 app.use(bodyParser.json({
     limit: '50mb',
@@ -30,15 +25,17 @@ app.use(bodyParser.json({
 
 app.get('/', async (req, res) => {
     const posts = await prisma.users_surveys_responses_aux.findMany({
-        where: { origin: 'email' }
+        where: { origin: 'email', response_status_id: 1 },
+        orderBy: { created_at: 'desc' },
+        take: 10
     })
     res.json({response: posts})
 });
 
 app.post('/populate', async (req, res) => {
     const service = new ImportService();
-    service.file();
-    res.json({response: 'Realizando a importação dos dados...'})
+    const resp = service.file();
+    res.json(resp)
 });
 
 app.get('/populate/status', async (req, res) => {

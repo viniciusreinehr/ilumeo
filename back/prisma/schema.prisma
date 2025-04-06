@@ -19,4 +19,6 @@ model users_surveys_responses_aux {
   origin String
   response_status_id  Int
   created_at DateTime @default(now())
+
+  @@index([origin, created_at(sort: Desc)])
 }
