@@ -1,18 +1,38 @@
 import Redis from "ioredis";
 import { PrismaClient } from "../../generated/prisma";
+import { stat } from "fs";
 
-const prisma = new PrismaClient();
 export default class ImportService {
     private filas: number = 0;
     private items: number = 0;
+
+    constructor(
+        private redis = new Redis("redis-chache"),
+        private prisma = new PrismaClient()
+    ) { }
+
     async file() {
-        const redis = new Redis("redis-chache");
         var fs = require('fs');
         const sql = await fs.readFileSync('/app/case_tech_lead.sql').toString();
         const items = sql.split(';');
-        this.items = (items.length*10)-7;
-        redis.set('totalToImport', (this.items).toString());
+        this.items = (items.length*10)-17;
+        this.redis.set('totalToImport', (this.items).toString());
         return this.exec(items);
+    }
+
+    async status() {
+        const total = await this.redis.get('totalToImport');
+        const posts = await this.prisma.users_surveys_responses_aux.count();
+        const porcentagem = Number(((Number(posts) * 100) / Number(total)).toFixed(2));
+        const status = porcentagem < 100 ? 'processing' : 'success';
+        return {
+            status: status,
+            response: {
+                porcentagem: porcentagem,
+                total: Number(total),
+                atual: posts
+            }
+        }
     }
 
     private async exec(array) {
@@ -37,7 +57,7 @@ export default class ImportService {
     }
 
     private async do(item) {
-        await prisma.$executeRawUnsafe(item).then((result: any) => {
+        await this.prisma.$executeRawUnsafe(item).then((result: any) => {
             return result;
         }).catch((error: any) => {
             return error;

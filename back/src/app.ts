@@ -1,14 +1,9 @@
 import express from 'express';
 import * as bodyParser from 'body-parser';
-import { PrismaClient } from '../generated/prisma'
-
 import dotenv from 'dotenv';
-import ImportService from './service/ImportService';
-import Redis from 'ioredis';
 import Auth from './middleware/Auth';
-
-const redis = new Redis("redis-chache");
-const prisma = new PrismaClient();
+import ImportService from './service/ImportService';
+import SearchService from './service/SearchService';
 
 dotenv.config();
 
@@ -24,25 +19,21 @@ app.use(bodyParser.json({
 }));
 
 app.get('/', async (req, res) => {
-    const posts = await prisma.users_surveys_responses_aux.findMany({
-        where: { origin: 'email', response_status_id: 1 },
-        orderBy: { created_at: 'desc' },
-        take: 10
-    })
-    res.json({response: posts})
+    const service = new SearchService();
+    const resp = await service.search(req.body);
+    res.json(resp)
 });
 
+const service = new ImportService();
+
 app.post('/populate', async (req, res) => {
-    const service = new ImportService();
     const resp = await service.file();
     res.json(resp)
 });
 
 app.get('/populate/status', async (req, res) => {
-    const total = await redis.get('totalToImport');
-    const posts = await prisma.users_surveys_responses_aux.count();
-    const porcentagem = (Number(posts) * 100) / Number(total);
-    res.json({response: {porcentagem: Number(porcentagem.toFixed(2)), total: Number(total), atual: posts}})
+    const resp = await service.status();
+    res.json(resp)
 });
 
 const porta = Number(process.env.PORT) || 8081;
