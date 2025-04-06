@@ -34,7 +34,7 @@ app.get('/', async (req, res) => {
 
 app.post('/populate', async (req, res) => {
     const service = new ImportService();
-    const resp = service.file();
+    const resp = await service.file();
     res.json(resp)
 });
 

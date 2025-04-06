@@ -4,12 +4,14 @@ import { PrismaClient } from "../../generated/prisma";
 const prisma = new PrismaClient();
 export default class ImportService {
     private filas: number = 0;
+    private items: number = 0;
     async file() {
         const redis = new Redis("redis-chache");
         var fs = require('fs');
         const sql = await fs.readFileSync('/app/case_tech_lead.sql').toString();
         const items = sql.split(';');
-        redis.set('totalToImport', (items.length*10).toString());
+        this.items = (items.length*10)-7;
+        redis.set('totalToImport', (this.items).toString());
         return this.exec(items);
     }
 
